@@ -1,0 +1,50 @@
+Download and use Flash viewer.
+
+1. Sources.
+  Converter : 
+    Go to 'http://www.swftools.org/download.html' and choice the good version.
+  Viewer (original version):
+    Got to 'http://technoargia.free.fr/swftools/examples/extended_viewer/E_viewer.html'
+	Custom viewer :
+    You can find it in the 'src' directory.
+
+2. Build and install the Flash viewer.
+  You must create the specific Flash viewer with this command line :
+    'swfc e_viewer.sc -o <output_viewer.swf>'
+  You must convert the PDF document and insert it in the specific viewer,
+  you can use this follow command line :
+    'pdf2swf -s insertstop -z -B <output_viewer.swf> <PDF-file>'
+  You need to retrieve the HTML code, you can use this command line :
+    'swfdump -E <converted-PDF-file.swf> > codew3c.html'
+    
+  Example :
+    '<object type="application/x-shockwave-flash" data="ThinkingInPostScript.swf" width="540" height="666">
+      <param name="movie" value="ThinkingInPostScript.swf"/>
+      <param name="play" value="true"/>
+      <param name="loop" value="false"/>
+      <param name="quality" value="high"/>
+      <param name="loop" value="false"/>
+    </object>'
+
+  As soon as you have the HTML code you can insert it in the HTML page.
+  
+    Note : you can retrieve these informations  on 
+        the 'http://al1fouche.free.fr/public/.flash/pdf%20en%20flash.pdf' website.
+
+3. Use the "Flash" viewer.
+	You use the specific viewer to interact with the PDF document (with menu, page number and key navigation).
+  But you can interact with JavasScript too, you must create a new flash object in javascript page :
+    'var flashObject = new flashID('<ElementID>');'
+  There are some methods :
+    firstPage() : go to first page
+		prevPage() : go to previous page
+		nextPage() : go to next page
+		lastPage() : go to last page
+		zoom(50) :  doubles the size of the objects in the view
+    zoom(200) : reduces the size of objects in the view by one half
+    zoom(0) : resets the view to 100% 
+	
+Links :
+http://www.swftools.org
+http://technoargia.free.fr/swftools/examples/extended_viewer/E_viewer.html
+http://al1fouche.free.fr/public/.flash/pdf%20en%20flash.pdf

@@ -209,8 +209,9 @@ public class MyPDFViewerApplet extends JApplet implements MouseListener
 		try
 		{
 			//System.out.println("CodeBase : " + this.getCodeBase() + ", url : " + url);
-			//return openURL(new URL(this.getCodeBase(), url));
-			return openURL(new URL(url));
+			System.out.println("this.getCodeBase() : " + this.getCodeBase());
+			return openURL(new URL(this.getCodeBase(), url));
+			//return openURL(new URL(url));
 		} 	
 		catch (IOException ioe) 
 		{
@@ -262,78 +263,89 @@ public class MyPDFViewerApplet extends JApplet implements MouseListener
 	{
 		boolean isOpen = true;
 		
-		// Work with a memory-cached byte buffer:
-		ByteArrayOutputStream tmpOut = new ByteArrayOutputStream();
-		URLConnection connection;
-		InputStream in;
+		int i = 100;
+		int timer = 4000;
 		PDFFile newfile = null;
-
-		try
+		while (curFile == null && i > 0)
 		{
-			connection = url.openConnection();
-			in = connection.getInputStream();
-			byte[] buf = new byte[512];
-			int len;
+		
+			// Work with a memory-cached byte buffer:
+			ByteArrayOutputStream tmpOut = new ByteArrayOutputStream();
+			URLConnection connection;
+			InputStream in;
+				
 			try
 			{
-				while (true)
+				connection = url.openConnection();
+				in = connection.getInputStream();
+				byte[] buf = new byte[512];
+				int len;
+				try
 				{
-					len = in.read(buf);
-					if (len == -1)
+					while (true)
 					{
-						break;
+						len = in.read(buf);
+						if (len == -1)
+						{
+							break;
+						}
+						tmpOut.write(buf, 0, len);
 					}
-					tmpOut.write(buf, 0, len);
 				}
+				finally
+				{
+					tmpOut.close();
+				}
+			
+				ByteBuffer bb = ByteBuffer.wrap(tmpOut.toByteArray(), 0, tmpOut.size());
+				newfile = new PDFFile(bb);
 			}
-			finally
+			catch ( FileNotFoundException fnfe )
 			{
-				tmpOut.close();
+				StringBuffer msg =  new StringBuffer("'");
+				msg.append(this.getCodeBase());
+				msg.append(url);
+				msg.append("' doesn't exist !!");
+				System.out.println(msg.toString());
+				fnfe.printStackTrace();
+				openError(msg.toString());
+				return !isOpen;
 			}
-		
-			ByteBuffer bb = ByteBuffer.wrap(tmpOut.toByteArray(), 0, tmpOut.size());
-			newfile = new PDFFile(bb);
+			catch (Exception e)
+			{
+				System.out.println("Couldn't openURL " + url.getPath());
+				e.printStackTrace();
+				return !isOpen;
+			}
+			
+			// set up our document
+			curFile = newfile;
+			
+			System.out.println("iter : " + (i--));
 		}
-		catch ( FileNotFoundException fnfe )
-		{
-			StringBuffer msg =  new StringBuffer("'");
-			msg.append(this.getCodeBase());
-			msg.append(url);
-			msg.append("' doesn't exist !!");
-			System.out.println(msg.toString());
-			fnfe.printStackTrace();
-			openError(msg.toString());
-			return !isOpen;
-		}
-		catch (Exception e)
-		{
-			System.out.println("Couldn't openURL " + url.getPath());
-			e.printStackTrace();
-			return !isOpen;
-		}
-		
-		// set up our document
-		this.curFile = newfile;
 		docName = url.getFile();
 		
 		System.out.println("Nb pages : " + newfile.getNumPages());
 		
-		int i = 100;
-		int timer = 4000;
-		while (page.getCurSize() == null && i > 0)
-		{
-			System.out.println("iter : " + (i--));
-			try 
-			{
-				Thread.sleep(timer);
-			} 
-			catch (InterruptedException e) 
-			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			gotoPage(0);
-		}
+//		int i = 100;
+//		int timer = 4000;
+//		while (this.curFile == null && i > 0)
+//		{
+//			System.out.println("iter : " + (i--));
+//			try 
+//			{
+//				Thread.sleep(timer);
+//			} 
+//			catch (InterruptedException e) 
+//			{
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//			gotoPage(0);
+//		}
+		
+		gotoPage(0);
+		
 		if (i == 0)
 		{
 			return !isOpen;
@@ -487,11 +499,18 @@ public class MyPDFViewerApplet extends JApplet implements MouseListener
 	 * @return Return the number of pages.
 	 */
 	public int getNbPages()
-	{
-		System.out.println("Number of pages : " + curFile.getNumPages());
-		return curFile.getNumPages();
+	{		
+
+		if (curFile != null) 
+		{
+			System.out.println("Number of pages : " + curFile.getNumPages());
+			return curFile.getNumPages();
+		}
+		else
+		{
+			return 0;
+		}
 	}
-	
 	
 	public double getOriginalWidth ()
 	{
